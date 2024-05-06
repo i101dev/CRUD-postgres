@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,13 +10,25 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/i101dev/rss-aggregator/handlers"
+	"github.com/i101dev/rss-aggregator/util"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	fmt.Println("F**k your couch")
+
+	fmt.Println("Starting up...")
 
 	godotenv.Load(".env")
+
+	conn, err := util.ConnectDB()
+
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	} else {
+		fmt.Println("Postgres connection success!")
+	}
+
+	defer conn.Close(context.Background())
 
 	port := os.Getenv("PORT")
 
