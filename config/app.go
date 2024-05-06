@@ -1,4 +1,4 @@
-package storage
+package config
 
 import (
 	"fmt"
@@ -8,13 +8,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type Config struct {
-	Host     string
-	Port     string
-	Password string
-	User     string
-	DBName   string
-	SSLMode  string
+type Database struct {
+	DB *gorm.DB
+}
+
+var (
+	db *gorm.DB
+)
+
+func GetDB() *gorm.DB {
+	return db
 }
 
 func NewPostgresConnection() (*gorm.DB, error) {

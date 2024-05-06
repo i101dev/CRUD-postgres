@@ -6,16 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/i101dev/rss-aggregator/models"
+	"github.com/i101dev/rss-aggregator/config"
 	"github.com/i101dev/rss-aggregator/routes"
-	"github.com/i101dev/rss-aggregator/storage"
-	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 )
-
-type Database struct {
-	DB *gorm.DB
-}
 
 func main() {
 
@@ -35,7 +29,7 @@ func main() {
 	// Database Setup
 	//
 
-	db, err := storage.NewPostgresConnection()
+	_, err := config.NewPostgresConnection()
 
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
@@ -43,15 +37,11 @@ func main() {
 		fmt.Println("Postgres connection success!")
 	}
 
-	if err = models.MigrateUsers(db); err != nil {
-		log.Fatal("could not migrate [users]")
-	}
-
 	// -----------------------------------------------------------------------
 	// Server Setup
 	//
 
-	router := routes.BuildRouter()
+	router := routes.NewRouter()
 
 	srv := &http.Server{
 		Handler: router,

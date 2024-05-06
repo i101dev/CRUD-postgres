@@ -3,10 +3,10 @@ package routes
 import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/i101dev/rss-aggregator/handlers"
+	"github.com/i101dev/rss-aggregator/controllers"
 )
 
-func BuildRouter() *chi.Mux {
+func NewRouter() *chi.Mux {
 
 	router := chi.NewRouter()
 
@@ -21,9 +21,16 @@ func BuildRouter() *chi.Mux {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Get("/test", handlers.HandleTest)
-	v1Router.Get("/error", handlers.HandleError)
+	v1Router.Get("/test", controllers.HandleTest)
+	v1Router.Get("/error", controllers.HandleError)
+
+	v1Router.Post("/users", controllers.CreateUser)
+	v1Router.Get("/users", controllers.GetAllUsers)
+	v1Router.Get("/users/{id}", controllers.GetUserByID)
+	v1Router.Put("/users/{id}", controllers.UpdateUser)
+	v1Router.Delete("/users/{id}", controllers.DeleteUser)
 
 	router.Mount("/v1", v1Router)
+
 	return router
 }

@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -35,4 +36,19 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(data)
+}
+
+func ParseBody(r *http.Request, x interface{}) {
+
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		log.Fatalf("Error reading request body: %s", err)
+		return
+	}
+
+	if err := json.Unmarshal([]byte(body), x); err != nil {
+		log.Fatalf("Error unmarshalling JSON: %s", err)
+		return
+	}
 }
