@@ -6,6 +6,8 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/i101dev/rss-aggregator/controllers"
 )
 
 type Database struct {
@@ -34,11 +36,15 @@ func NewPostgresConnection() (*gorm.DB, error) {
 
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 
-	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
+	d, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 
 	if err != nil {
 		return db, err
+	} else {
+		db = d
 	}
 
-	return db, nil
+	controllers.InitUsers(d)
+
+	return d, nil
 }

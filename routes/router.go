@@ -4,6 +4,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/i101dev/rss-aggregator/controllers"
+	"github.com/i101dev/rss-aggregator/handlers"
 )
 
 func NewRouter() *chi.Mux {
@@ -21,8 +22,8 @@ func NewRouter() *chi.Mux {
 
 	v1Router := chi.NewRouter()
 
-	v1Router.Get("/test", controllers.HandleTest)
-	v1Router.Get("/error", controllers.HandleError)
+	v1Router.Get("/test", handlers.HandleTest)
+	v1Router.Get("/error", handlers.HandleError)
 
 	v1Router.Post("/users", controllers.CreateUser)
 	v1Router.Get("/users", controllers.GetAllUsers)
