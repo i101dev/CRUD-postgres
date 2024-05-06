@@ -1,34 +1,29 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/cors"
-	"github.com/i101dev/rss-aggregator/handlers"
-	"github.com/i101dev/rss-aggregator/util"
+	"github.com/i101dev/rss-aggregator/models"
+	"github.com/i101dev/rss-aggregator/routes"
+	"github.com/i101dev/rss-aggregator/storage"
+	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
 )
+
+type Database struct {
+	DB *gorm.DB
+}
 
 func main() {
 
 	fmt.Println("Starting up...")
 
-	godotenv.Load(".env")
-
-	conn, err := util.ConnectDB()
-
-	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
-	} else {
-		fmt.Println("Postgres connection success!")
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(err)
 	}
-
-	defer conn.Close(context.Background())
 
 	port := os.Getenv("PORT")
 
@@ -36,23 +31,27 @@ func main() {
 		log.Fatal("Invalid port - not found in environment")
 	}
 
-	router := chi.NewRouter()
+	// -----------------------------------------------------------------------
+	// Database Setup
+	//
 
-	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"Get", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-		MaxAge:           300,
-	}))
+	db, err := storage.NewPostgresConnection()
 
-	v1Router := chi.NewRouter()
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	} else {
+		fmt.Println("Postgres connection success!")
+	}
 
-	v1Router.Get("/test", handlers.HandleTest)
-	v1Router.Get("/error", handlers.HandleError)
+	if err = models.MigrateUsers(db); err != nil {
+		log.Fatal("could not migrate [users]")
+	}
 
-	router.Mount("/v1", v1Router)
+	// -----------------------------------------------------------------------
+	// Server Setup
+	//
+
+	router := routes.BuildRouter()
 
 	srv := &http.Server{
 		Handler: router,

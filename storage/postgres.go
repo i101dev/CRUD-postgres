@@ -1,15 +1,23 @@
-package util
+package storage
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/jackc/pgx/v4"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func ConnectDB() (*pgx.Conn, error) {
+type Config struct {
+	Host     string
+	Port     string
+	Password string
+	User     string
+	DBName   string
+	SSLMode  string
+}
+
+func NewPostgresConnection() (*gorm.DB, error) {
 
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
@@ -22,21 +30,12 @@ func ConnectDB() (*pgx.Conn, error) {
 	}
 
 	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
-	conn, err := pgx.Connect(context.Background(), connStr)
+
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+		return db, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
-	defer cancel()
-
-	err = conn.Ping(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	return conn, nil
+	return db, nil
 }
