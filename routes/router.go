@@ -31,6 +31,8 @@ func NewRouter() *chi.Mux {
 	v1Router.Put("/users/{id}", controllers.UpdateUser)
 	v1Router.Delete("/users/{id}", controllers.DeleteUser)
 
+	v1Router.Put("/users/add-skill/{id}", controllers.AddSkill)
+
 	router.Mount("/v1", v1Router)
 
 	return router
